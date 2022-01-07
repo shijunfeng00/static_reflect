@@ -6,6 +6,10 @@ It provides a very rich compile-time reflection function.
 
 Below is a demo of all APIs.
 
+# environment
+
+gcc10.3.0 & -std=c++20
+
 # For constexpr object
 
 ```cpp
