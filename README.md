@@ -1,8 +1,13 @@
 # static_reflect
-This is a Compiling time staic reflection lightweight framework for C++
-It provides a very rich compile-time reflection function
-Below is a demo of all APIs
-# for constexpr object
+
+This is a Compiling time staic reflection lightweight framework for C++.
+
+It provides a very rich compile-time reflection function.
+
+Below is a demo of all APIs.
+
+# For constexpr object
+
 ```cpp
 #include"static_reflect.h"
 #include<cstdio>
@@ -94,8 +99,10 @@ int main()
 }
 ```
 
-# for non-const object
+# For non-const object
+
 Most functions can still be used at compile time(obviously constexpr_invoke can't be used)
+
 ```cpp
 int main()
 {
