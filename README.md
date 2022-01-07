@@ -1,6 +1,6 @@
 # static_reflect
 
-This is a fully compiling time staic reflection lightweight framework for C++.
+This is a fully compiling time static reflection lightweight framework for C++.
 
 It provides a very rich compile-time reflection function.
 
