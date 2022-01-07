@@ -4,25 +4,25 @@
 #include<string_view>
 #define static_reflect(Class) Class::get_config()
 template<char...args>
-struct static_string //±àÒëÆÚ¾²Ì¬×Ö·û´®
+struct static_string //ç¼–è¯‘æœŸé™æ€å­—ç¬¦ä¸²
 {
 	static constexpr const char str[]={args...};
 	operator const char*()const{return static_string::str;}
 	static constexpr std::size_t length=std::tuple_size<decltype(std::make_tuple(args...))>::value;
 };
 template<typename T,T...ch>
-consteval auto operator""_ss() 
+consteval auto operator""_ss()
 {
 	return static_string<ch...,'\0'>();
 }
 /***************************************************/
 template<std::size_t integer>
-struct IntegerWrapper //¶ÔÓÚÕûÊıµÄ°ü×°Àà£¬±ÈÈçIntegerWrapper<1234>£¬ÓÃÓÚ¼ÆËãÀàĞÍ¹şÏ£Öµ£¬Ä¿Ç°Ã»ÓĞÌ«´óµÄ×÷ÓÃ
+struct IntegerWrapper //å¯¹äºæ•´æ•°çš„åŒ…è£…ç±»ï¼Œæ¯”å¦‚IntegerWrapper<1234>ï¼Œç”¨äºè®¡ç®—ç±»å‹å“ˆå¸Œå€¼ï¼Œç›®å‰æ²¡æœ‰å¤ªå¤§çš„ä½œç”¨
 {
 	static constexpr auto value=integer;
 };
 template<typename Object>
-constexpr auto get_type_name() //±àÒëÆÚ»ñÈ¡ÈÎÒâÀàĞÍÃû³Æ
+constexpr auto get_type_name() //ç¼–è¯‘æœŸè·å–ä»»æ„ç±»å‹åç§°
 {
 	constexpr std::string_view fully_name=__PRETTY_FUNCTION__;
 	constexpr std::size_t begin=fully_name.find("=")+2;
@@ -37,7 +37,7 @@ constexpr auto get_type_name() //±àÒëÆÚ»ñÈ¡ÈÎÒâÀàĞÍÃû³Æ
 	return type_name;
 }
 template<typename Object>
-constexpr auto get_type_name_hash()  //±àÒëÆÚ»ñÈ¡ÈÎÒâÀàĞÍÃû³Æ¶ÔÓ¦µÄ¹şÏ£Öµ
+constexpr auto get_type_name_hash()  //ç¼–è¯‘æœŸè·å–ä»»æ„ç±»å‹åç§°å¯¹åº”çš„å“ˆå¸Œå€¼
 {
 	constexpr std::string_view fully_name=__PRETTY_FUNCTION__;
 	constexpr std::size_t begin=fully_name.find("=")+2;
@@ -53,7 +53,7 @@ constexpr auto get_type_name_hash()  //±àÒëÆÚ»ñÈ¡ÈÎÒâÀàĞÍÃû³Æ¶ÔÓ¦µÄ¹şÏ£Öµ
 	return IntegerWrapper<hash_value>();
 }
 /********************************************************************************/
-template<typename Object> //ÀàµÄ°ü×°Æ÷£¬¾ßÌåÊÇºÍdecltype½áºÏÓÃÀ´×Ô¶¯ÍÆ¶ÏÀàĞÍ
+template<typename Object> //ç±»çš„åŒ…è£…å™¨ï¼Œå…·ä½“æ˜¯å’Œdecltypeç»“åˆç”¨æ¥è‡ªåŠ¨æ¨æ–­ç±»å‹
 struct TypeWrapper
 {
 	using type=Object;
@@ -94,40 +94,51 @@ struct Fields
 	const FieldType metadata;
 	consteval Fields(FieldType info):
 		metadata{info}{}
-		consteval auto size()const{return std::tuple_size<decltype(metadata)>::value;}
-		template<typename FieldName,std::size_t index=0>
-		consteval auto get_field(FieldName field_name)const
-		{
-			if constexpr(index>=std::tuple_size<decltype(metadata)>::value) //±àÒëÆÚ±éÀúËùÓĞÊôĞÔ£¬ÕÒµ½·ûºÏÌõ¼şµÄÄÇ¸öÊôĞÔ
-			{                                                               //±¾À´ÊÇ´òËãĞ´Ò»¸ö±àÒëÆÚ¹şÏ£±í£¬ºóÀ´·ÅÆúÁË
-				static_assert(index<std::tuple_size<decltype(metadata)>::value,"No such field.");
+	consteval auto size()const{return std::tuple_size<decltype(metadata)>::value;}
+	template<typename FieldName,std::size_t index=0>
+	consteval auto get_field(FieldName field_name)const
+	{
+		if constexpr(index>=std::tuple_size<decltype(metadata)>::value) //ç¼–è¯‘æœŸéå†æ‰€æœ‰å±æ€§ï¼Œæ‰¾åˆ°ç¬¦åˆæ¡ä»¶çš„é‚£ä¸ªå±æ€§
+		{                                                               //æœ¬æ¥æ˜¯æ‰“ç®—å†™ä¸€ä¸ªç¼–è¯‘æœŸå“ˆå¸Œè¡¨ï¼Œåæ¥æ”¾å¼ƒäº†
+			static_assert(index<std::tuple_size<decltype(metadata)>::value,"No such field.");
+		}
+		else
+    	{
+			using field_name_type=std::add_lvalue_reference_t<std::add_const_t<decltype(field_name)>>;
+			using this_field_name_type=decltype(std::get<1>(std::get<index>(metadata).info));
+			if constexpr(std::is_same<field_name_type,this_field_name_type>::value)
+			{
+				return std::get<index>(metadata);
 			}
 			else
 			{
-				using field_name_type=std::add_lvalue_reference_t<std::add_const_t<decltype(field_name)>>;
-				using this_field_name_type=decltype(std::get<1>(std::get<index>(metadata).info));
-				if constexpr(std::is_same<field_name_type,this_field_name_type>::value)
-				{
-					return std::get<index>(metadata);
-				}
-				else
-				{
-					return get_method<FieldName,index+1>(field_name);
-				} 
+				return get_method<FieldName,index+1>(field_name);
 			}
 		}
+	}
+	template<std::size_t index=0>
+	constexpr int for_each(auto&&callback)const
+	{
+		if constexpr(index<std::tuple_size<decltype(metadata)>::value)
+		{
+			callback(index,std::get<index>(metadata));
+			for_each<index+1>(callback);
+		}
+		return 0;
+	}
+	
 };
 template<typename MethodTypeName,typename MethodName,typename MethodNameHash,typename Function,typename Parmas>
-struct Method 
+struct Method
 {
 	template<typename T>
 	using remove_const_ref=typename std::remove_const<typename std::remove_reference<T>::type>::type;
 	template<typename T>
 	using remove_rvalue_ref=typename std::remove_reference<typename std::remove_reference<T>::type>::type;
 	const std::tuple<MethodTypeName,MethodName,MethodNameHash,Function,Parmas>info;
-	
+
 	consteval Method(std::tuple<MethodTypeName,MethodName,MethodNameHash,Function,Parmas>info):info{info}{}
-	
+
 	template<std::size_t i>
 	consteval auto arg_type()const->remove_rvalue_ref<
 		decltype(std::get<i>(std::declval<
@@ -139,7 +150,7 @@ struct Method
 	consteval auto return_type()const->remove_const_ref<
 		decltype(std::get<0>(std::get<4>(info)))
 	>::type;
-	
+
 	consteval auto get_type_name()const
 	{
 		return std::string_view{std::get<0>(info).str};
@@ -156,12 +167,12 @@ struct Method
 	{
 		return std::string_view{::get_type_name<decltype(return_type())>().str};
 	}
-	 //Èç¹ûÎª-1,·µ»ØÒ»¸ötuple,·ñÔò·µ»Ø¾ßÌåµÄÄ³¸ö²ÎÊıÀàĞÍÃû³Æ
+	 //å¦‚æœä¸º-1,è¿”å›ä¸€ä¸ªtuple,å¦åˆ™è¿”å›å…·ä½“çš„æŸä¸ªå‚æ•°ç±»å‹åç§°
 	consteval auto get_args_type_name()const
 	{
 		using types=remove_const_ref<decltype(std::get<1>(std::get<4>(info)))>;
 		constexpr auto num_args=std::tuple_size<types>::value;
-	
+
 			return []<std::size_t...i>(std::integer_sequence<std::size_t,i...>)
 			{
 				return std::array{
@@ -212,6 +223,16 @@ struct Methods
 			}
 		}
 	}
+	template<std::size_t index=0>
+	constexpr int for_each(auto&&callback)const
+	{
+		if constexpr(index<std::tuple_size<decltype(metadata)>::value)
+		{
+			callback(index,std::get<index>(metadata));
+			for_each<index+1>(callback);
+		}
+		return 0;
+	}
 };
 template<typename ObjectTypeWrapper,typename FieldsType,typename MethodsType>
 struct Class
@@ -254,7 +275,7 @@ struct Reflection
 	{
 		return Class{TypeWrapper<Object>{},fields_info,methods_info};
 	}
-	template<typename Field> //ÅĞ¶ÏÊÇ²»ÊÇ³ÉÔ±º¯Êı£¬Èç¹û²»ÊÇµÄ»°£¬ÄÇ¾ÍÊÇ³ÉÔ±±äÁ¿
+	template<typename Field> //åˆ¤æ–­æ˜¯ä¸æ˜¯æˆå‘˜å‡½æ•°ï¼Œå¦‚æœä¸æ˜¯çš„è¯ï¼Œé‚£å°±æ˜¯æˆå‘˜å˜é‡
 	struct IsClassMethod
 	{
 		template<typename ReturnType,typename ObjectType,typename...Args>
@@ -271,9 +292,9 @@ struct Reflection
 		return Fields{std::make_tuple(
 			Field{std::make_tuple(
 				get_type_name<decltype(field_type_func(field.first))>(),
-				field.second,                
-				get_type_name_hash<decltype(field_type_func(field.first))>(),                                              
-				[=](const Object&node)->const auto{return node.*(field.first);},                
+				field.second,
+				get_type_name_hash<decltype(field_type_func(field.first))>(),
+				[=](const Object&node)->const auto{return node.*(field.first);},
 				[=](Object&node,const auto&value){return node.*(field.first)=value;},
 				TypeWrapper<decltype(field_type_func(field.first))>{}
 				)}...
@@ -283,14 +304,14 @@ struct Reflection
 	{
 		return Methods{std::make_tuple(
 			Method{std::make_tuple(
-				get_type_name<decltype(method.first)>(),                                             //·½·¨µÄÀàĞÍÃû³Æ
-				method.second,                                                                       //·½·¨Ãû³Æ
-				get_type_name_hash<decltype(method.first)>(),                                        //·½·¨Ãû³ÆµÄ¹şÏ£Öµ
-				[=]<typename ReturnType,typename...Args>(ReturnType(Object::*method)(Args...))   //µ÷ÓÃ·½·¨µÄº¯ÊıÖ¸Õë
+				get_type_name<decltype(method.first)>(),                                             //æ–¹æ³•çš„ç±»å‹åç§°
+				method.second,                                                                       //æ–¹æ³•åç§°
+				get_type_name_hash<decltype(method.first)>(),                                        //æ–¹æ³•åç§°çš„å“ˆå¸Œå€¼
+				[=]<typename ReturnType,typename...Args>(ReturnType(Object::*method)(Args...))   //è°ƒç”¨æ–¹æ³•çš„å‡½æ•°æŒ‡é’ˆ
 				{
 					return [=](Object&node,const Args&...args){return (node.*method)(args...);};
 				}(method.first),
-				[=]<typename ReturnType,typename...Args>(ReturnType(Object::*method)(Args...))   //µ÷ÓÃ·½·¨µÄº¯ÊıÖ¸Õë
+				[=]<typename ReturnType,typename...Args>(ReturnType(Object::*method)(Args...))   //è°ƒç”¨æ–¹æ³•çš„å‡½æ•°æŒ‡é’ˆ
 				{
 					return std::make_pair(
 						TypeWrapper<ReturnType>{},
