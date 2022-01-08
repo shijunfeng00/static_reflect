@@ -135,3 +135,79 @@ int main()
 	static_assert(return_type=="int");
 }	
 ```
+
+# Traverse
+Traverse methods and fields
+```cpp
+#include"static_reflect.h"
+#include<iostream>
+using namespace std;
+struct Node
+{
+	constexpr Node(){}
+	constexpr Node(int x,float y):x{x},y{y}{} //不过构造函数还是得保持public...
+private:
+	int x=3;
+	float y=2;
+	constexpr int add(int dx,float dy)
+	{
+		return x+dx+y+dy;
+	}
+	constexpr int mul(float dx)
+	{
+		return x*dx*y;
+	}
+public:
+	static consteval auto get_config() //注册反射所需的meta data
+	{
+		/*
+		return Reflection<Node>::reflect(
+			make_pair(&Node::x,"x"_ss),
+			make_pair(&Node::y,"y"_ss),
+			make_pair(&Node::add,"add"_ss),
+			make_pair(&Node::mul,"mul"_ss)
+		);
+		*/
+		return Reflection<Node>::regist_class(
+			Reflection<Node>::regist_field(
+				make_pair(&Node::x,"x"_ss),
+				make_pair(&Node::y,"y"_ss)
+			),
+			Reflection<Node>::regist_method(
+				make_pair(&Node::add,"add"_ss),
+				make_pair(&Node::mul,"mul"_ss)
+			)
+		);
+	}
+};
+template<std::size_t index=0>
+inline constexpr void for_each_element(auto&&methods,auto&&callback)
+{
+	if constexpr(index<std::tuple_size<decltype(methods.metadata)>::value)
+	{
+		callback(index,std::get<index>(methods.metadata));
+		for_each_element<index+1>(methods,callback);
+	}
+}
+int main()
+{
+	constexpr auto refl_info=static_reflect(Node);
+	constexpr auto methods=refl_info.get_methods();
+	constexpr auto fields=refl_info.get_fields();
+	constexpr auto node=refl_info.get_instance(2,3.f);
+	
+	methods.for_each(
+		[](auto&&index,auto method){
+			printf("method name:%-5s type name:%-20s\n",method.get_name().data(),method.get_type_name().data());
+		}
+	);
+	fields.for_each(
+		[=](auto&&index,auto field){
+			if constexpr(std::is_same_v<decltype(field.type()),int>)
+			    printf("field name:%-2s type name:%-5s value:%-2d\n",field.get_name().data(),field.get_type_name().data(),field.get_value(node));
+			if constexpr(std::is_same_v<decltype(field.type()),float>)
+				printf("field name:%-2s type name:%-5s value:%-2.1f\n",field.get_name().data(),field.get_type_name().data(),field.get_value(node));
+		}
+	);
+}
+```
