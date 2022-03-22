@@ -9,6 +9,16 @@ struct static_string //编译期静态字符串
 	static constexpr const char str[]={args...};
 	operator const char*()const{return static_string::str;}
 	static constexpr std::size_t length=std::tuple_size<decltype(std::make_tuple(args...))>::value;
+	template<char...args2>
+	consteval auto operator+(static_string<args2...>s2)
+	{
+		return static_string<args...,args2...>();
+	}
+	template<char...args2>
+	consteval auto operator+(const static_string<args2...>s2)const
+	{
+		return static_string<args...,args2...>();
+	}
 };
 template<typename T,T...ch>
 consteval auto operator""_ss()
@@ -94,39 +104,28 @@ struct Fields
 	const FieldType metadata;
 	consteval Fields(FieldType info):
 		metadata{info}{}
-	consteval auto size()const{return std::tuple_size<decltype(metadata)>::value;}
-	template<typename FieldName,std::size_t index=0>
-	consteval auto get_field(FieldName field_name)const
-	{
-		if constexpr(index>=std::tuple_size<decltype(metadata)>::value) //编译期遍历所有属性，找到符合条件的那个属性
-		{                                                               //本来是打算写一个编译期哈希表，后来放弃了
-			static_assert(index<std::tuple_size<decltype(metadata)>::value,"No such field.");
-		}
-		else
-    	{
-			using field_name_type=std::add_lvalue_reference_t<std::add_const_t<decltype(field_name)>>;
-			using this_field_name_type=decltype(std::get<1>(std::get<index>(metadata).info));
-			if constexpr(std::is_same<field_name_type,this_field_name_type>::value)
-			{
-				return std::get<index>(metadata);
+		consteval auto size()const{return std::tuple_size<decltype(metadata)>::value;}
+		template<typename FieldName,std::size_t index=0>
+		consteval auto get_field(FieldName field_name)const
+		{
+			if constexpr(index>=std::tuple_size<decltype(metadata)>::value) //编译期遍历所有属性，找到符合条件的那个属性
+			{                                                               //本来是打算写一个编译期哈希表，后来放弃了
+				static_assert(index<std::tuple_size<decltype(metadata)>::value,"No such field.");
 			}
 			else
 			{
-				return get_method<FieldName,index+1>(field_name);
+				using field_name_type=std::add_lvalue_reference_t<std::add_const_t<decltype(field_name)>>;
+				using this_field_name_type=decltype(std::get<1>(std::get<index>(metadata).info));
+				if constexpr(std::is_same<field_name_type,this_field_name_type>::value)
+				{
+					return std::get<index>(metadata);
+				}
+				else
+				{
+					return get_field<FieldName,index+1>(field_name);
+				}
 			}
 		}
-	}
-	template<std::size_t index=0>
-	constexpr int for_each(auto&&callback)const
-	{
-		if constexpr(index<std::tuple_size<decltype(metadata)>::value)
-		{
-			callback(index,std::get<index>(metadata));
-			for_each<index+1>(callback);
-		}
-		return 0;
-	}
-	
 };
 template<typename MethodTypeName,typename MethodName,typename MethodNameHash,typename Function,typename Parmas>
 struct Method
@@ -222,16 +221,6 @@ struct Methods
 				return get_method<MethodName,index+1>(field_name);
 			}
 		}
-	}
-	template<std::size_t index=0>
-	constexpr int for_each(auto&&callback)const
-	{
-		if constexpr(index<std::tuple_size<decltype(metadata)>::value)
-		{
-			callback(index,std::get<index>(metadata));
-			for_each<index+1>(callback);
-		}
-		return 0;
 	}
 };
 template<typename ObjectTypeWrapper,typename FieldsType,typename MethodsType>
