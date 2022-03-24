@@ -14,6 +14,7 @@ gcc10.3.0 & -std=c++20
 
 ```cpp
 #include"static_reflect.h"
+using namespace refl;
 #include<cstdio>
 using namespace std;
 struct Node
@@ -56,7 +57,7 @@ public:
 };
 int main()
 {
-	constexpr auto refl_info=static_reflect(Node);                   //得到类的反射信息
+	constexpr auto refl_info=static_reflect<Node>();                   //得到类的反射信息
 	constexpr auto methods=refl_info.get_methods();                  //得到类的所有方法的tuple
 	constexpr auto method=methods.get_method("add"_ss);              //得到名称为"add"的方法
 	constexpr auto fields=refl_info.get_fields();                    //得到类的所有属性的tuple
@@ -110,7 +111,7 @@ Most functions can still be used at compile time(obviously constexpr_invoke can'
 ```cpp
 int main()
 {
-	constexpr auto refl_info=static_reflect(Node);                   //得到类的反射信息
+	constexpr auto refl_info=static_reflect<Node>();                   //得到类的反射信息
 	constexpr auto fields=refl_info.get_fields();                    //得到类的所有属性的tuple
 	constexpr auto field=fields.get_field("x"_ss);                   //得到名称为"x"的方法
 	constexpr auto methods=refl_info.get_methods();                  //得到类的所有方法的tuple
@@ -140,6 +141,7 @@ int main()
 Traverse methods and fields
 ```cpp
 #include"static_reflect.h"
+using namespace refl;
 #include<iostream>
 using namespace std;
 struct Node
@@ -162,22 +164,22 @@ public:
 	{
 		/*
 		return Reflection<Node>::reflect(
-			make_pair(&Node::x,"x"_ss),
-			make_pair(&Node::y,"y"_ss),
-			make_pair(&Node::add,"add"_ss),
-			make_pair(&Node::mul,"mul"_ss)
+		make_pair(&Node::x,"x"_ss),
+		make_pair(&Node::y,"y"_ss),
+		make_pair(&Node::add,"add"_ss),
+		make_pair(&Node::mul,"mul"_ss)
 		);
-		*/
+		 */
 		return Reflection<Node>::regist_class(
 			Reflection<Node>::regist_field(
 				make_pair(&Node::x,"x"_ss),
 				make_pair(&Node::y,"y"_ss)
-			),
+				),
 			Reflection<Node>::regist_method(
 				make_pair(&Node::add,"add"_ss),
 				make_pair(&Node::mul,"mul"_ss)
-			)
-		);
+				)
+			);
 	}
 };
 template<std::size_t index=0>
@@ -191,23 +193,25 @@ inline constexpr void for_each_element(auto&&methods,auto&&callback)
 }
 int main()
 {
-	constexpr auto refl_info=static_reflect(Node);
+	constexpr auto refl_info=static_reflect<Node>();
 	constexpr auto methods=refl_info.get_methods();
 	constexpr auto fields=refl_info.get_fields();
 	constexpr auto node=refl_info.get_instance(2,3.f);
 	
-	methods.for_each(
+	Reflection<>::for_each(
+		methods,
 		[](auto&&index,auto method){
 			printf("method name:%-5s type name:%-20s\n",method.get_name().data(),method.get_type_name().data());
 		}
-	);
-	fields.for_each(
+		);
+	Reflection<>::for_each(
+		fields,
 		[=](auto&&index,auto field){
 			if constexpr(std::is_same_v<decltype(field.type()),int>)
-			    printf("field name:%-2s type name:%-5s value:%-2d\n",field.get_name().data(),field.get_type_name().data(),field.get_value(node));
+				printf("field name:%-2s type name:%-5s value:%-2d\n",field.get_name().data(),field.get_type_name().data(),field.get_value(node));
 			if constexpr(std::is_same_v<decltype(field.type()),float>)
 				printf("field name:%-2s type name:%-5s value:%-2.1f\n",field.get_name().data(),field.get_type_name().data(),field.get_value(node));
 		}
-	);
+		);
 }
 ```
