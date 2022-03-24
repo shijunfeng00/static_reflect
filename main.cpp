@@ -1,10 +1,11 @@
 #include"static_reflect.h"
+using namespace refl;
 #include<cstdio>
 using namespace std;
 struct Node
 {
 	constexpr Node(){}
-	constexpr Node(int x,float y):x{x},y{y}{} //²»¹ı¹¹Ôìº¯Êı»¹ÊÇµÃ±£³Öpublic...
+	constexpr Node(int x,float y):x{x},y{y}{} //ä¸è¿‡æ„é€ å‡½æ•°è¿˜æ˜¯å¾—ä¿æŒpublic...
 private:
 	int x=3;
 	float y=2;
@@ -17,63 +18,62 @@ private:
 		return x*dx*y;
 	}
 public:
-	static consteval auto get_config() //×¢²á·´ÉäËùĞèµÄmeta data
+	static consteval auto get_config() //æ³¨å†Œåå°„æ‰€éœ€çš„meta data
 	{
 		/*
 		return Reflection<Node>::reflect(
-			make_pair(&Node::x,"x"_ss),
-			make_pair(&Node::y,"y"_ss),
-			make_pair(&Node::add,"add"_ss),
-			make_pair(&Node::mul,"mul"_ss)
+		make_pair(&Node::x,"x"_ss),
+		make_pair(&Node::y,"y"_ss),
+		make_pair(&Node::add,"add"_ss),
+		make_pair(&Node::mul,"mul"_ss)
 		);
-		*/
+		 */
 		return Reflection<Node>::regist_class(
 			Reflection<Node>::regist_field(
 				make_pair(&Node::x,"x"_ss),
 				make_pair(&Node::y,"y"_ss)
-			),
+				),
 			Reflection<Node>::regist_method(
 				make_pair(&Node::add,"add"_ss),
 				make_pair(&Node::mul,"mul"_ss)
-			)
-		);
+				)
+			);
 	}
 };
 int main()
 {
+	constexpr auto refl_info=static_reflect<Node>();                   //å¾—åˆ°ç±»çš„åå°„ä¿¡æ¯
+	constexpr auto methods=refl_info.get_methods();                  //å¾—åˆ°ç±»çš„æ‰€æœ‰æ–¹æ³•çš„tuple
+	constexpr auto method=methods.get_method("add"_ss);              //å¾—åˆ°åç§°ä¸º"add"çš„æ–¹æ³•
+	constexpr auto fields=refl_info.get_fields();                    //å¾—åˆ°ç±»çš„æ‰€æœ‰å±æ€§çš„tuple
+	constexpr auto field=fields.get_field("x"_ss);                   //å¾—åˆ°åç§°ä¸º"x"çš„æ–¹æ³•
 	
-	constexpr auto refl_info=static_reflect(Node);                   //µÃµ½ÀàµÄ·´ÉäĞÅÏ¢
-	constexpr auto methods=refl_info.get_methods();                  //µÃµ½ÀàµÄËùÓĞ·½·¨µÄtuple
-	constexpr auto method=methods.get_method("add"_ss);              //µÃµ½Ãû³ÆÎª"add"µÄ·½·¨
-	constexpr auto fields=refl_info.get_fields();                    //µÃµ½ÀàµÄËùÓĞÊôĞÔµÄtuple
-	constexpr auto field=fields.get_field("x"_ss);                   //µÃµ½Ãû³ÆÎª"x"µÄ·½·¨
+	constexpr auto node=refl_info.get_instance(2,3.f);               //å®ä¾‹åŒ–ä¸€ä¸ªå¯¹è±¡,è°ƒç”¨å¯¹åº”çš„æ„é€ å‡½æ•°
 	
-	constexpr auto node=refl_info.get_instance(2,3.f);               //ÊµÀı»¯Ò»¸ö¶ÔÏó,µ÷ÓÃ¶ÔÓ¦µÄ¹¹Ôìº¯Êı
+	constexpr auto method_name=method.get_name();                    //è·å–æ–¹æ³•åç§°
+	constexpr auto method_type=method.get_type_name();               //è·å–æ–¹æ³•ç±»å‹åç§°
+	constexpr auto method_type_id=method.get_type_id();              //è·å–æ–¹æ³•ç±»å‹åç§°çš„å“ˆå¸Œå€¼
+	constexpr auto method_value=method.constexpr_invoke(node,2,3.f); //è°ƒç”¨æ–¹æ³•
 	
-	constexpr auto method_name=method.get_name();                    //»ñÈ¡·½·¨Ãû³Æ
-	constexpr auto method_type=method.get_type_name();               //»ñÈ¡·½·¨ÀàĞÍÃû³Æ
-	constexpr auto method_type_id=method.get_type_id();              //»ñÈ¡·½·¨ÀàĞÍÃû³ÆµÄ¹şÏ£Öµ
-	constexpr auto method_value=method.constexpr_invoke(node,2,3.f); //µ÷ÓÃ·½·¨
+	constexpr auto args_types=method.get_args_type_name();           //å¾—åˆ°è¯¥æ–¹æ³•çš„å‚æ•°ç±»å‹åç§°åˆ—è¡¨
+	constexpr auto return_type=method.get_return_type_name();       //å¾—åˆ°è¯¥æ–¹æ³•çš„è¿”å›å€¼ç±»å‹åç§°
 	
-	constexpr auto args_types=method.get_args_type_name();           //µÃµ½¸Ã·½·¨µÄ²ÎÊıÀàĞÍÃû³ÆÁĞ±í
-	constexpr auto return_type=method.get_return_type_name();       //µÃµ½¸Ã·½·¨µÄ·µ»ØÖµÀàĞÍÃû³Æ
-	
-	constexpr auto field_name=field.get_name();                      //µÃµ½¸ÃÊôĞÔµÄÃû³Æ
-	constexpr auto field_type=field.get_type_name();                 //µÃµ½¸ÃÊôĞÔµÄÀàĞÍÃû³Æ
-	constexpr auto value=field.get_value(node);                      //µÃµ½¸ÃÊôĞÔµÄÖµ
-	//field.set_value(node,2333);                                    //ÉèÖÃ¸ÃÊôĞÔµÄÖµ,constexpr¶ÔÏó²»¿ÉÓÃ.
+	constexpr auto field_name=field.get_name();                      //å¾—åˆ°è¯¥å±æ€§çš„åç§°
+	constexpr auto field_type=field.get_type_name();                 //å¾—åˆ°è¯¥å±æ€§çš„ç±»å‹åç§°
+	constexpr auto value=field.get_value(node);                      //å¾—åˆ°è¯¥å±æ€§çš„å€¼
+	//field.set_value(node,2333);                                    //è®¾ç½®è¯¥å±æ€§çš„å€¼,constexprå¯¹è±¡ä¸å¯ç”¨.
 	
 	static_assert(std::is_same<decltype(refl_info.type()),Node>::value);
 	static_assert(refl_info.get_name()=="Node");
-	static_assert(methods.size()==2);                                         //³ÉÔ±º¯ÊıµÄÊıÁ¿
-	static_assert(fields.size()==2);                                          //³ÉÔ±±äÁ¿µÄÊıÁ¿
+	static_assert(methods.size()==2);                                         //æˆå‘˜å‡½æ•°çš„æ•°é‡
+	static_assert(fields.size()==2);                                          //æˆå‘˜å˜é‡çš„æ•°é‡
 	
-
-	static_assert(std::is_same<decltype(method.return_type()),int>::value);   //µÃµ½³ÉÔ±º¯ÊıµÄ·µ»ØÖµÀàĞÍ(·Ç×Ö·û´®)
-	static_assert(std::is_same<decltype(method.arg_type<0>()),int>::value);   //µÃµ½³ÉÔ±º¯ÊıµÚ0¸ö²ÎÊıÀàĞÍ
-	static_assert(std::is_same<decltype(method.arg_type<1>()),float>::value); //µÃµ½³ÉÔ±º¯ÊıµÚ1¸ö²ÎÊıÀàĞÍ
-	static_assert(args_types.size()==2);                                      //¸Ã³ÉÔ±º¯Êı²ÎÊı¸öÊı
-	static_assert(method.constexpr_invoke(node,2,3.f)==10);                   //µ÷ÓÃ¹¹Ôìº¯Êı¹¹Ôì±àÒëÆÚ¾²Ì¬¶ÔÏó
+	
+	static_assert(std::is_same<decltype(method.return_type()),int>::value);   //å¾—åˆ°æˆå‘˜å‡½æ•°çš„è¿”å›å€¼ç±»å‹(éå­—ç¬¦ä¸²)
+	static_assert(std::is_same<decltype(method.arg_type<0>()),int>::value);   //å¾—åˆ°æˆå‘˜å‡½æ•°ç¬¬0ä¸ªå‚æ•°ç±»å‹
+	static_assert(std::is_same<decltype(method.arg_type<1>()),float>::value); //å¾—åˆ°æˆå‘˜å‡½æ•°ç¬¬1ä¸ªå‚æ•°ç±»å‹
+	static_assert(args_types.size()==2);                                      //è¯¥æˆå‘˜å‡½æ•°å‚æ•°ä¸ªæ•°
+	static_assert(method.constexpr_invoke(node,2,3.f)==10);                   //è°ƒç”¨æ„é€ å‡½æ•°æ„é€ ç¼–è¯‘æœŸé™æ€å¯¹è±¡
 	static_assert(method_name=="add");
 	static_assert(method_type=="int (Node::*)(int, float)");
 	static_assert(method_type_id==4425629840105553482ll);
@@ -88,28 +88,28 @@ int main()
 	static_assert(value==2);
 	
 	/*
-	constexpr auto refl_info=static_reflect(Node);                   //µÃµ½ÀàµÄ·´ÉäĞÅÏ¢
-	constexpr auto fields=refl_info.get_fields();                    //µÃµ½ÀàµÄËùÓĞÊôĞÔµÄtuple
-	constexpr auto field=fields.get_field("x"_ss);                   //µÃµ½Ãû³ÆÎª"x"µÄ·½·¨
-	constexpr auto methods=refl_info.get_methods();                  //µÃµ½ÀàµÄËùÓĞ·½·¨µÄtuple
-	constexpr auto method=methods.get_method("add"_ss);              //µÃµ½Ãû³ÆÎª"add"µÄ·½·¨
-	Node node=refl_info.get_instance(2,3.f);                         //ÊµÀı»¯Ò»¸ö¶ÔÏó,µ÷ÓÃ¶ÔÓ¦µÄ¹¹Ôìº¯Êı
+	constexpr auto refl_info=static_reflect(Node);                   //å¾—åˆ°ç±»çš„åå°„ä¿¡æ¯
+	constexpr auto fields=refl_info.get_fields();                    //å¾—åˆ°ç±»çš„æ‰€æœ‰å±æ€§çš„tuple
+	constexpr auto field=fields.get_field("x"_ss);                   //å¾—åˆ°åç§°ä¸º"x"çš„æ–¹æ³•
+	constexpr auto methods=refl_info.get_methods();                  //å¾—åˆ°ç±»çš„æ‰€æœ‰æ–¹æ³•çš„tuple
+	constexpr auto method=methods.get_method("add"_ss);              //å¾—åˆ°åç§°ä¸º"add"çš„æ–¹æ³•
+	Node node=refl_info.get_instance(2,3.f);                         //å®ä¾‹åŒ–ä¸€ä¸ªå¯¹è±¡,è°ƒç”¨å¯¹åº”çš„æ„é€ å‡½æ•°
 	volatile int x=2333;
-	field.set_value(node,x);                                         //ĞŞ¸ÄÖµ
-	printf("%d,",field.get_value(node));                            //µÃµ½Öµ
+	field.set_value(node,x);                                         //ä¿®æ”¹å€¼
+	printf("%d,",field.get_value(node));                            //å¾—åˆ°å€¼
 	printf("%d\n",method.invoke(node,2,3.f));
 	
-	constexpr auto args_types=method.get_args_type_name();           //µÃµ½¸Ã·½·¨µÄ²ÎÊıÀàĞÍÃû³ÆÁĞ±í
-	constexpr auto return_type=method.get_return_type_name();       //µÃµ½¸Ã·½·¨µÄ·µ»ØÖµÀàĞÍÃû³Æ
-	static_assert(std::is_same<decltype(method.return_type()),int>::value);   //µÃµ½³ÉÔ±º¯ÊıµÄ·µ»ØÖµÀàĞÍ(·Ç×Ö·û´®)
-	static_assert(std::is_same<decltype(method.arg_type<0>()),int>::value);   //µÃµ½³ÉÔ±º¯ÊıµÚ0¸ö²ÎÊıÀàĞÍ
-	static_assert(std::is_same<decltype(method.arg_type<1>()),float>::value); //µÃµ½³ÉÔ±º¯ÊıµÚ1¸ö²ÎÊıÀàĞÍ
-	static_assert(args_types.size()==2);                                      //¸Ã³ÉÔ±º¯Êı²ÎÊı¸öÊı
+	constexpr auto args_types=method.get_args_type_name();           //å¾—åˆ°è¯¥æ–¹æ³•çš„å‚æ•°ç±»å‹åç§°åˆ—è¡¨
+	constexpr auto return_type=method.get_return_type_name();       //å¾—åˆ°è¯¥æ–¹æ³•çš„è¿”å›å€¼ç±»å‹åç§°
+	static_assert(std::is_same<decltype(method.return_type()),int>::value);   //å¾—åˆ°æˆå‘˜å‡½æ•°çš„è¿”å›å€¼ç±»å‹(éå­—ç¬¦ä¸²)
+	static_assert(std::is_same<decltype(method.arg_type<0>()),int>::value);   //å¾—åˆ°æˆå‘˜å‡½æ•°ç¬¬0ä¸ªå‚æ•°ç±»å‹
+	static_assert(std::is_same<decltype(method.arg_type<1>()),float>::value); //å¾—åˆ°æˆå‘˜å‡½æ•°ç¬¬1ä¸ªå‚æ•°ç±»å‹
+	static_assert(args_types.size()==2);                                      //è¯¥æˆå‘˜å‡½æ•°å‚æ•°ä¸ªæ•°
 	static_assert(method.get_name()=="add");
 	static_assert(method.get_type_name()=="int (Node::*)(int, float)");
 	static_assert(method.get_type_id()==4425629840105553482ll);
 	static_assert(args_types[0]=="int");
 	static_assert(args_types[1]=="float");
 	static_assert(return_type=="int");
-	*/
+	 */
 }
