@@ -1,17 +1,3 @@
-# static_reflect
-
-This is a fully compiling time static reflection lightweight framework for C++.
-
-It provides a very rich compile-time reflection function.
-
-Below is a demo of all APIs.
-
-# environment
-
-gcc10.3.0 & -std=c++20
-
-# For example
-```cpp
 #include"static_reflect.h"
 #include"static_serialize.h"
 #include<iostream>
@@ -141,6 +127,14 @@ int main()
 	static_assert(method.constexpr_invoke(object,2,3.f)==8);
 	static_assert(method.constexpr_invoke(object2,2,3.f)==10);
 
+	fields.for_each([](auto&&index,auto field){
+		cout<<field.get_type_name()<<" "<<field.get_name()<<endl;
+	});
+	
+	methods.for_each([](auto&&index,auto method){
+		cout<<method.get_type_name()<<" "<<method.get_name()<<endl;
+	});
+	
 
 	auto object1=reflect.get_instance(1,2.f);    
 	cout<<field.get_value(object1)<<endl;
@@ -207,4 +201,3 @@ int main()
 	cout<<seri::dumps(obj); 
 	
 }
-```
