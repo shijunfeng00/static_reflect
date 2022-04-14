@@ -33,7 +33,7 @@ public:
 				pair{&Node::z,"z"_ss}
 				),
 			Reflection<Node>::regist_method(
-				pair{&Node::add,"add"_ss},
+				pair{&Node::add,"add"_ss}, 
 				pair{&Node::mul,"mul"_ss}
 				)
 			);
