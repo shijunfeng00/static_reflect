@@ -11,9 +11,9 @@ namespace seri
 	using namespace refl;
 	using namespace type_traits;
 	/**
-	 * ±éÀútuple£¬²¢¶ÔÓÚÃ¿Ò»¸öÔªËØ´«Èëcallbackº¯ÊıÖĞ´¦Àí
-	 * callbackº¯ÊıÂú×ã:
-	 * void callback(auto&&index,auto element); index´ú±íÏÂ±í£¬elementÎªtupleµÚindex¸öÔªËØ
+	 * éå†tupleï¼Œå¹¶å¯¹äºæ¯ä¸€ä¸ªå…ƒç´ ä¼ å…¥callbackå‡½æ•°ä¸­å¤„ç†
+	 * callbackå‡½æ•°æ»¡è¶³:
+	 * void callback(auto&&index,auto element); indexä»£è¡¨ä¸‹è¡¨ï¼Œelementä¸ºtupleç¬¬indexä¸ªå…ƒç´ 
 	 */
 	template<size_t idx=0>
 	void for_each(auto&&tp,auto&&callback)
@@ -26,17 +26,17 @@ namespace seri
 		}
 	}
 	/**
-	 * µÃµ½JSON×Ö·û´®µÄ¸ñÊ½×Ö·û,±ÈÈç{"x":{},"y":{}}
-	 * È»ºóÕâ¸ö¿ÉÒÔÅäºÏ±ÈÈçstd::formatÔÚRuntimeÌî³ä£¬À´½øĞĞÊä³ö
-	 * ²»¹ıGCCÔİÊ±²»Ö§³Ö£¬ËùÒÔÎÒ²ÅÓÃÁËstd::ostreamstreamÀ´¹¹ÔìJSON×Ö·û´®£¬¼ûÏÂÎÄdumpsº¯Êı
-	 * Èç¹ûÊÇÒ»¸ö¿ÉĞòÁĞ»¯µÄÀà£¬½«»á±»ĞòÁĞ»¯Îª{"field_name1":{},"field_name2":{}}
-	 * Èç¹ûÊôĞÔÊÇstd::tuple,std::pair,»á±»²ğ½âÎª[{},{},{}]µÄĞÎÊ½£¬ÒòÎª²ÎÊı¸öÊıÊÇÒÑÖªµÄ£¬¿ÉÒÔ±àÒëÆÚ´¦Àí
-	 * std::arrayÒ²»á±»±íÊ¾Îª[1,2,3,4]µÄĞÎÊ½£¬µ«ÊÇ²»»á±»²ğ½â£¬Ö»»áĞ´ÎªÕ¼Î»·û{},ÍòÒ»ÊôĞÔÊÇstd::array<int,10000>,±àÒëÆ÷»áÕ¨µô
+	 * å¾—åˆ°JSONå­—ç¬¦ä¸²çš„æ ¼å¼å­—ç¬¦,æ¯”å¦‚{"x":{},"y":{}}
+	 * ç„¶åè¿™ä¸ªå¯ä»¥é…åˆæ¯”å¦‚std::formatåœ¨Runtimeå¡«å……ï¼Œæ¥è¿›è¡Œè¾“å‡º
+	 * ä¸è¿‡GCCæš‚æ—¶ä¸æ”¯æŒï¼Œæ‰€ä»¥æˆ‘æ‰ç”¨äº†std::ostreamstreamæ¥æ„é€ JSONå­—ç¬¦ä¸²ï¼Œè§ä¸‹æ–‡dumpså‡½æ•°
+	 * å¦‚æœæ˜¯ä¸€ä¸ªå¯åºåˆ—åŒ–çš„ç±»ï¼Œå°†ä¼šè¢«åºåˆ—åŒ–ä¸º{"field_name1":{},"field_name2":{}}
+	 * å¦‚æœå±æ€§æ˜¯std::tuple,std::pair,ä¼šè¢«æ‹†è§£ä¸º[{},{},{}]çš„å½¢å¼ï¼Œå› ä¸ºå‚æ•°ä¸ªæ•°æ˜¯å·²çŸ¥çš„ï¼Œå¯ä»¥ç¼–è¯‘æœŸå¤„ç†
+	 * std::arrayä¹Ÿä¼šè¢«è¡¨ç¤ºä¸º[1,2,3,4]çš„å½¢å¼ï¼Œä½†æ˜¯ä¸ä¼šè¢«æ‹†è§£ï¼Œåªä¼šå†™ä¸ºå ä½ç¬¦{},ä¸‡ä¸€å±æ€§æ˜¯std::array<int,10000>,ç¼–è¯‘å™¨ä¼šç‚¸æ‰
 	 */
 	template<typename T,std::size_t ith=0>
 	consteval auto get_json_format_no_end()
 	{
-		constexpr auto get_size=[]() //TµÄÀàĞÍ¿ÉÄÜÊÇ¿ÉĞòÁĞ»¯¶ÔÏó,Ò²¿ÉÄÜÊÇtuple/pair,Òò´ËÕâÀïĞèÒª±àÒëÆÚÅĞ¶Ï
+		constexpr auto get_size=[]() //Tçš„ç±»å‹å¯èƒ½æ˜¯å¯åºåˆ—åŒ–å¯¹è±¡,ä¹Ÿå¯èƒ½æ˜¯tuple/pair,å› æ­¤è¿™é‡Œéœ€è¦ç¼–è¯‘æœŸåˆ¤æ–­
 		{
 			if constexpr(is_reflectable_class_v<T>)
 			{
@@ -52,20 +52,20 @@ namespace seri
 			}
 		};
 		constexpr auto size=get_size();
-		if constexpr(ith<size)                //¶ÔÓÚµÚith¸öÊôĞÔ,½«ÆäĞòÁĞ»¯
+		if constexpr(ith<size)                //å¯¹äºç¬¬ithä¸ªå±æ€§,å°†å…¶åºåˆ—åŒ–
 		{
-			if constexpr(is_tuple_or_pair_v<T>) //TÊÇtuple or pair
+			if constexpr(is_tuple_or_pair_v<T>) //Tæ˜¯tuple or pair
 			{
 				using element_type=decltype(std::get<ith>(std::declval<T>()));
 				using value=decltype(
 					[](){
-						if constexpr(is_reflectable_class_v<element_type>) //¸ÃÔªËØÊÇÁíÍâÒ»¸ö¿ÉÒÔ·´ÉäµÄ¶ÔÏó
+						if constexpr(is_reflectable_class_v<element_type>) //è¯¥å…ƒç´ æ˜¯å¦å¤–ä¸€ä¸ªå¯ä»¥åå°„çš„å¯¹è±¡
 						{
 							return get_json_format_no_end<std::remove_reference_t<element_type>,0>();
 						}
 						else if constexpr(is_tuple_or_pair_v<element_type>)
 						{
-							return get_json_format_no_end<element_type,0>(); //¸ÃÊôĞÔÊÇÒ»¸ötuple»òÕßpair
+							return get_json_format_no_end<element_type,0>(); //è¯¥å±æ€§æ˜¯ä¸€ä¸ªtupleæˆ–è€…pair
 						}
 						else
 						{
@@ -73,25 +73,25 @@ namespace seri
 						}
 					}()
 					);
-				if constexpr(ith==0)//¼ÓÉÏ[
+				if constexpr(ith==0)//åŠ ä¸Š[
 				{
 					return static_string<'['>()+value()+static_string<','>()+get_json_format_no_end<T,ith+1>();
 				}
-				else if constexpr(ith==size-1) //¼ÓÉÏ]
+				else if constexpr(ith==size-1) //åŠ ä¸Š]
 				{
 					return value()+static_string<']'>();
 				}
 				else
 				{
-					return value()+static_string<','>()+get_json_format_no_end<T,ith+1>();//¼ÓÉÏµ±Ç°Õâ¸öÊôĞÔĞòÁĞ»¯ºóµÄ½á¹¹
+					return value()+static_string<','>()+get_json_format_no_end<T,ith+1>();//åŠ ä¸Šå½“å‰è¿™ä¸ªå±æ€§åºåˆ—åŒ–åçš„ç»“æ„
 				}
-
+				
 			}
-			else //TÊÇReflectableµÄÀà
+			else //Tæ˜¯Reflectableçš„ç±»
 			{
 				constexpr auto refl_info=static_reflect<T>();
-
-				using refl_info_type=remove_const_refertnce_t<decltype( //»ñµÃµØith¸öÊôĞÔ¶ÔÓ¦µÄÀàĞÍĞÅÏ¢
+				
+				using refl_info_type=remove_const_refertnce_t<decltype( //è·å¾—åœ°ithä¸ªå±æ€§å¯¹åº”çš„ç±»å‹ä¿¡æ¯
 					std::get<1>(
 						std::get<ith>(
 							std::declval<decltype(refl_info)>().get_fields().info
@@ -101,8 +101,8 @@ namespace seri
 				using field_type=decltype(
 					std::declval<decltype(refl_info)>().get_fields().get_field(refl_info_type())
 					)::type;
-
-				using field_name=decltype(//È¥µôÄ©Î²µÄ'\0'
+				
+				using field_name=decltype(//å»æ‰æœ«å°¾çš„'\0'
 					[]<size_t...index,char...args>(std::index_sequence<index...>,static_string<args...>){
 						return static_string<static_string<args...>::str[index]...>();
 					}(
@@ -112,13 +112,13 @@ namespace seri
 					);
 				using value=decltype(
 					[](){
-						if constexpr(is_reflectable_class_v<field_type>) //¸ÃÊôĞÔÊÇÁíÍâÒ»¸ö¿ÉÒÔ·´ÉäµÄ¶ÔÏó
+						if constexpr(is_reflectable_class_v<field_type>) //è¯¥å±æ€§æ˜¯å¦å¤–ä¸€ä¸ªå¯ä»¥åå°„çš„å¯¹è±¡
 						{
 							return get_json_format_no_end<field_type,0>();
 						}
 						else if constexpr(is_tuple_or_pair_v<field_type>)
 						{
-							return get_json_format_no_end<field_type,0>(); //¸ÃÊôĞÔÊÇÒ»¸ötuple»òÕßpair
+							return get_json_format_no_end<field_type,0>(); //è¯¥å±æ€§æ˜¯ä¸€ä¸ªtupleæˆ–è€…pair
 						}
 						else
 						{
@@ -147,7 +147,7 @@ namespace seri
 					constexpr auto json=field_pair+static_string<','>()+get_json_format_no_end<T,ith+1>();
 					return json;
 				}
-
+				
 			}
 		}
 		else
@@ -161,16 +161,16 @@ namespace seri
 		return get_json_format_no_end<T,0>()+""_ss;
 	}
 	/**
-	 * µÃµ½JSON×Ö·û´®Ã¿Ò»¸öÕ¼Î»·û¶ÔÓ¦µÄ±äÁ¿£¬´¢´æÎªÒ»¸östd::tupleĞÎÊ½
-	 * ºÍÉÏÃæµÄget_json_formatÕ¼Î»·ûÒ»Ò»¶ÔÓ¦¹ØÏµ
-	 * std::tuple,std::pair,¿ÉĞòÁĞ»¯µÄÀà¶¼»á±»·Ö½âÎªÔª×éÖĞ¶ÔÓ¦Î»ÖÃµÄÔªËØ
+	 * å¾—åˆ°JSONå­—ç¬¦ä¸²æ¯ä¸€ä¸ªå ä½ç¬¦å¯¹åº”çš„å˜é‡ï¼Œå‚¨å­˜ä¸ºä¸€ä¸ªstd::tupleå½¢å¼
+	 * å’Œä¸Šé¢çš„get_json_formatå ä½ç¬¦ä¸€ä¸€å¯¹åº”å…³ç³»
+	 * std::tuple,std::pair,å¯åºåˆ—åŒ–çš„ç±»éƒ½ä¼šè¢«åˆ†è§£ä¸ºå…ƒç»„ä¸­å¯¹åº”ä½ç½®çš„å…ƒç´ 
 	 */
 	template<std::size_t ith=0>
 	constexpr auto get_json_params(auto&&p)
 	{
 		using T=std::remove_const_t<std::remove_reference_t<decltype(p)>>;
-
-		constexpr auto get_size=[]() //TµÄÀàĞÍ¿ÉÄÜÊÇ¿ÉĞòÁĞ»¯¶ÔÏó,Ò²¿ÉÄÜÊÇtuple/pair,Òò´ËÕâÀïĞèÒª±àÒëÆÚÅĞ¶Ï
+		
+		constexpr auto get_size=[]() //Tçš„ç±»å‹å¯èƒ½æ˜¯å¯åºåˆ—åŒ–å¯¹è±¡,ä¹Ÿå¯èƒ½æ˜¯tuple/pair,å› æ­¤è¿™é‡Œéœ€è¦ç¼–è¯‘æœŸåˆ¤æ–­
 		{
 			if constexpr(is_reflectable_class_v<T>)
 			{
@@ -189,7 +189,7 @@ namespace seri
 		constexpr auto size=get_size();
 		if constexpr(ith<size)
 		{
-			if constexpr(is_reflectable_class_v<T>) //TÊÇÒ»¸ö¿ÉĞòÁĞ»¯µÄÀà£¬Òò´Ë³¢ÊÔĞòÁĞ»¯ËûµÄÃ¿Ò»¸öÊôĞÔ(ÔÚ¾²Ì¬·½·¨get_configÖĞ×¢²áµÄ)
+			if constexpr(is_reflectable_class_v<T>) //Tæ˜¯ä¸€ä¸ªå¯åºåˆ—åŒ–çš„ç±»ï¼Œå› æ­¤å°è¯•åºåˆ—åŒ–ä»–çš„æ¯ä¸€ä¸ªå±æ€§(åœ¨é™æ€æ–¹æ³•get_configä¸­æ³¨å†Œçš„)
 			{
 				constexpr auto refl_info=static_reflect<T>();
 				constexpr auto field=std::get<ith>(refl_info.get_fields().info);
@@ -200,11 +200,11 @@ namespace seri
 							).info
 						)
 					)>;
-
+				
 				using field_type=decltype(
 					std::declval<decltype(refl_info)>().get_fields().get_field(field_type_name())
 					)::type;
-
+				
 				if constexpr(is_reflectable_class_v<field_type>)
 				{
 					const field_type&value=field.get_value(p);
@@ -241,8 +241,8 @@ namespace seri
 					return std::tuple_cat(
 						field_values,
 						get_json_params<ith+1>(p)
-						);
-
+					);
+					
 				}
 				else if constexpr(is_tuple_or_pair_v<element_type>)
 				{
@@ -252,7 +252,7 @@ namespace seri
 						field_values,
 						get_json_params<ith+1>(p)
 						);
-
+					
 				}
 				else
 				{
@@ -261,9 +261,9 @@ namespace seri
 						std::make_tuple(std::ref(value)),
 						get_json_params<ith+1>(p)
 						);
-
+					
 				}
-
+				
 			}
 		}
 		else
@@ -285,7 +285,7 @@ namespace seri
 		auto to_string=[&]<typename T>(T&&param)
 		{
 			using param_type=std::remove_reference_t<decltype(param)>;
-
+			
 			if constexpr(std::is_pointer_v<std::remove_reference_t<param_type>>)
 			{
 				if(param==nullptr||param==NULL)
@@ -304,13 +304,13 @@ namespace seri
 			else if constexpr(is_raw_array_v<param_type>)
 			{
 				using element_type=std::remove_reference_t<decltype(param[0])>;
-				if constexpr(std::is_fundamental_v<element_type>)
+				if constexpr(std::is_fundamental_v<element_type>||is_string_v<element_type>)
 				{
 					oss<<"[";
 					bool begin=true;
 					for(auto&it:param)
 					{
-
+						
 						if(!begin)
 							oss<<",";
 						begin=false;
@@ -326,13 +326,13 @@ namespace seri
 			else if constexpr(is_list_type_v<param_type>)
 			{
 				using element_type=std::remove_pointer_t<decltype(param.begin())>;
-				if constexpr(std::is_fundamental_v<element_type>)
+				if constexpr(std::is_fundamental_v<element_type>||is_string_v<element_type>)
 				{
 					oss<<"[";
 					bool begin=true;
 					for(auto&it:param)
 					{
-
+						
 						if(!begin)
 							oss<<",";
 						begin=false;
@@ -376,4 +376,3 @@ namespace seri
 	using describe_t=std::remove_reference_t<decltype(describe<Object>())>;
 };
 #endif
-
