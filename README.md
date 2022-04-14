@@ -1,11 +1,16 @@
 # static_reflect
+
 This is a fully compiling time static reflection lightweight framework for C++.
 
 It provides a very rich compile-time reflection function.
 
-# environment
-gcc10.3.0 & -std=c++20
+Use it to put part of the serialization work at compile time(static_serilize.h)
 
+Multiple inheritance,Raw C-style array and iterable container are supported for serialize.
+
+# environment
+
+gcc10.3.0 & -std=c++20 & windows10
 
 # Below is a demo of all APIs.
 ```cpp
@@ -214,4 +219,3 @@ int main()
 }
 
 ```
-
